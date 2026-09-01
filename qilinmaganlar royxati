@@ -1,0 +1,71 @@
+❌ Hali qilinmagan asosiy shartlar
+
+1. /listings/:id — Detail
+
+rasmlar
+location/address
+category
+guests / bedrooms / beds / bathrooms
+description
+amenities
+reviews
+favorite
+booking card
+sana + guests
+total price
+booking mutation
+
+2. /login
+
+email
+password
+login mutation
+token + user → Zustand/localStorage
+xato → toast
+login bo‘lsa / ga redirect
+
+3. /register
+
+name
+email
+password
+confirm password
+register mutation
+avtomatik login
+email band → toast
+
+4. Auth himoyasi
+
+/favorites → login kerak
+/bookings → login kerak
+/login, /register → login qilgan odam kira olmaydi
+
+5. Favorites
+
+favorites query
+removeFavorite
+isFavorite
+login bo‘lmasa → login
+bo‘sh holat
+
+6. Bookings
+
+bookings query
+booking ma'lumotlari
+CONFIRMED / CANCELLED
+confirmed bo‘lsa cancel
+
+7. isFavorite
+Hozirgi Listing query'da yo‘q. Shart bo‘yicha Home, Listings va Detail'da bo‘lishi kerak.
+
+8. Admin /admin
+
+admin login
+faqat ADMIN
+listinglar ro‘yxati
+yangi listing qo‘shish formasi
+
+9. Navbar
+
+login qilmagan: Login / Register
+login qilgan: Favorites / Bookings / avatar / name / Logout
