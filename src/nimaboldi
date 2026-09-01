@@ -1,0 +1,186 @@
+Airbnb Mini — Frontend
+
+Sahifalar
+
+| Manzil | Sahifa | Kim kiradi |
+|--------|--------|------------|
+| / | Bosh sahifa | Hammaga |
+| /listings | Barcha uylar | Hammaga |
+| /listings/:id | Uy tafsiloti | Hammaga |
+| /login | Kirish | Faqat hali kirmagan |
+| /register | Ro‘yxatdan o‘tish | Faqat hali kirmagan |
+| /favorites | Sevimlilar | Faqat kirgan |
+| /bookings | Mening bronlarim | Faqat kirgan |
+| /admin | Admin | Faqat admin |
+
+Login qanday ishlaydi
+
+1. Login/Register muvaffaqiyatli bo‘lsa → token va user ni Zustand + localStorage ga saqlang.
+2. Har bir GraphQL so‘rovga qo‘shing: Authorization: Bearer <token>
+
+Sevimli (`isFavorite`)
+
+Har bir Listing da isFavorite maydoni/fieldi bor (`true` / `false`).
+
+- Login qilmagan bo‘lsangiz → doim false
+- Login qilgan bo‘lsangiz → shu uy sevimlida bo‘lsa true
+
+Nima qilasiz: Home, Listings, Detail so‘rovlarida isFavorite ni ham so‘rang. ❤️ shu qiymatga qarab to‘ldirilgan yoki bo‘sh ko‘rinsin.
+
+# misol
+{
+  id
+  title
+  images
+  pricePerNight
+  isFavorite
+}
+
+
+❤️ bosilganda:
+- isFavorite === false → addFavorite(listingId)
+- isFavorite === true → removeFavorite(listingId)
+- kirmagan bo‘lsa → toast + /login
+
+Sahifalarni himoya qilish (`App.jsx`)
+
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useAuthStore } from "./store/authStore";
+
+function FaqatKirgan({ children }) {
+  const token = useAuthStore((s) => s.accessToken);
+  return token ? children : <Navigate to="/login" replace />;
+}
+
+function FaqatKirmagan({ children }) {
+  const token = useAuthStore((s) => s.accessToken);
+  return token ? <Navigate to="/" replace /> : children;
+}
+
+function FaqatAdmin({ children }) {
+  const { accessToken, user } = useAuthStore();
+  if (!accessToken) return <Navigate to="/login" replace />;
+  if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
+  return children;
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/listings" element={<ListingsPage />} />
+      <Route path="/listings/:id" element={<ListingDetailPage />} />
+
+      <Route path="/login" element={<FaqatKirmagan><LoginPage /></FaqatKirmagan>} />
+      <Route path="/register" element={<FaqatKirmagan><RegisterPage /></FaqatKirmagan>} />
+
+      <Route path="/favorites" element={<FaqatKirgan><FavoritesPage /></FaqatKirgan>} />
+      <Route path="/bookings" element={<FaqatKirgan><BookingsPage /></FaqatKirgan>} />
+
+      <Route path="/admin" element={<FaqatAdmin><AdminPage /></FaqatAdmin>} />
+
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
+
+
+Navbar: kirmagan → Login/Register; kirgan → Sevimlilar, Bronlar, User avatar va ism, chiqish/sign out.
+
+Dizayn (umumiy)
+
+- Oddiy, toza UI
+- Kartochkalar gridda; telefonda ham chiroyli
+- Yuklanayotganda Skeleton yoki spinner
+- Bo‘sh bo‘lsa: “Hali hech narsa yo‘q” + tugma
+- Muvaffaqiyat/xato → Toast
+- Dizayn mukammal bo‘lishi shart emas — asosiysi ishlashi
+
+1) Bosh sahifa /
+
+Nima ko‘rinadi:
+- Qisqa sarlavha + “Uylarni ko‘rish” tugmasi
+- Tanlangan uylar/Tavsiya etilgan uylar (`featuredListings`, ~6 ta)
+- Kartada: rasm, nom, joy, yulduzcha, narx, ❤️ (`isFavorite` bo‘yicha)
+
+Nima qilish kerak:
+- Kartaga bosilsa → /listings/:id
+- ❤️ → addFavorite / removeFavorite (yoki login)
+
+2) Barcha uylar /listings
+
+Nima ko‘rinadi:
+- Filter: search, tur/category (`APARTMENT`, HOUSE, VILLA, CABIN, `HOTEL`), joy/location, min/max narx
+- Uylar ro‘yxati + pagination
+- Har bir kartada isFavorite bo‘yicha ❤️
+
+3) Uy tafsiloti /listings/:id
+
+Nima ko‘rinadi:
+- Rasmlar
+- Nom, joy, manzil, tur
+- Yulduzcha va sharhlar soni (faqat ko‘rsatish)
+- Mehmonlar, yotoqxona, karavot, hammom
+- Tavsif va qulayliklar
+- ❤️ (`listing.isFavorite`)
+- Bron qilish cardi: sanalar, mehmonlar, jami narx, “Bron qilish”
+
+Nima qilish kerak:
+- Form: chiqish sanasi kirishdan keyin; mehmonlar 1 dan uy sig‘imigacha
+- Muvaffaqiyat → toast + /bookings
+- Xato → toast
+- Kirmagan bron qilsa → /login 4) Kirish /login
+
+Nima ko‘rinadi: email, parol, “Kirish”, Register havolasi
+
+Nima qilish kerak:
+- Form tekshiruvi
+- Muvaffaqiyat → token saqlash → bosh sahifa
+- Xato → toast
+- Allaqachon kirgan → bosh sahifa
+
+5) Ro‘yxatdan o‘tish /register
+
+Nima ko‘rinadi: ism, email, parol, parolni takrorlash
+
+Nima qilish kerak:
+- Parollar bir xil bo‘lsin
+- Muvaffaqiyat → avtomatik kirish → bosh sahifa
+- Email band bo‘lsa → toast
+
+6) Sevimlilar /favorites (login kerak)
+
+Nima ko‘rinadi: sevimli uylar (`favorites` so‘rovi)
+
+Nima qilish kerak:
+- Token yo‘q → /login
+- Bo‘sh bo‘lsa → “Uylarni ko‘rish” tugmasi
+- ❤️ bilan olib tashlash (`removeFavorite`)
+- Kartaga bosilsa → tafsilot
+
+7) Mening bronlarim /bookings (login kerak)
+
+Nima ko‘rinadi: har bir bron:
+- Uy rasmi, nomi, joyi
+- Sanalar, mehmonlar, kechalar, jami narx
+- Holat: CONFIRMED yoki CANCELLED
+- Bekor qilish (faqat `CONFIRMED`)
+
+😍 Admin /admin (faqat admin)
+
+Admin uchun alohida sign in page qilasizlar. Admin uchun login va parol: email: admin@example.com,
+password: admin123
+
+Nima ko‘rinadi:
+1. Mavjud uylar ro‘yxati
+2. Yangi uy qo‘shish formasi (**majburiy**)
+
+Formada:
+- title, description, category
+- location, address
+- pricePerNight, guests, bedrooms, beds, bathrooms
+- images (rasm URL lari — yuklash yo‘q)
+- amenities
+- isFeatured
+
+Formaga qo‘ymang: rating, reviewsCount — backend o‘zi boshqaradi.

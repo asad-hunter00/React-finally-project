@@ -7,6 +7,7 @@ import { client } from "./assets/Graph-client.js";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "./components/Header.jsx";
+import Favorites from "./components/Favorites.jsx";
 
 function App() {
   return (
@@ -17,6 +18,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Listing />} />
             <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/favorites" element={<Favorites />} />
+            <Route path="/favorites/:id" element={<Favorites />} />
           </Routes>
       </ApolloProvider>
     </>
