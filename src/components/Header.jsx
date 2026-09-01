@@ -2,6 +2,7 @@ import { IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import styled from "styled-components";
+import CloseIcon from "@mui/icons-material/Close";
 
 const HeaderWrapper = styled.div`
   width: 100%;
@@ -22,8 +23,6 @@ const TopHeader = styled.div`
 const Logo = styled.img`
   width: 120px;
   display: block;
-  position: relative;
-  right: 500px;
   
 `;
 
@@ -84,8 +83,6 @@ const Profile = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  position: relative;
-  left: 520px;
 `;
 
 const UserLetter = styled.div`

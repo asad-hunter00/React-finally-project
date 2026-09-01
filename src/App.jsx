@@ -13,13 +13,11 @@ function App() {
     <>
       <ApolloProvider client={client}>
         <ToastContainer />
-        <Container maxWidth="md">
           <Header />
           <Routes>
             <Route path="/" element={<Listing />} />
             <Route path="/sign-up" element={<SignUp />} />
           </Routes>
-        </Container>
       </ApolloProvider>
     </>
   );
