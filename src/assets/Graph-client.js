@@ -2,7 +2,7 @@ import { ApolloClient, InMemoryCache, createHttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
 const httpLink = createHttpLink({
-  uri: "https://airbnb-clone-backend-qii5.onrender.com/graphql"
+  uri: "https://radiative-marlin-unplayed.ngrok-free.dev/graphql"
 });
 
 const authLink = setContext((_, { headers }) => {

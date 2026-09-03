@@ -1,7 +1,6 @@
 import { gql } from "@apollo/client";
 import { useMutation } from "@apollo/client/react";
 import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
 import {
   Container,
   Paper,
@@ -10,7 +9,6 @@ import {
   Button,
   Typography,
 } from "@mui/material";
-import Snackbar from "@mui/material/Snackbar";
 import { Controller, useForm } from "react-hook-form";
 import useAuth from "../assets/Favorite";
 import { toast } from "react-toastify";
@@ -18,19 +16,21 @@ import { useState } from "react";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { InputAdornment, IconButton } from "@mui/material";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import styled from "styled-components";
 
 const SIGNUP_MUTATION = gql`
-  mutation Register($email: String!, $name: String!, $password: String!) {
-    register(email: $email, name: $name, password: $password) {
-      accessToken
-      user {
-        id
-        email
+    mutation Register($email: String!, $name: String!, $password: String!) {
+      register(email: $email, name: $name, password: $password) {
+        accessToken
+        user {
+          id
+          email
+        }
       }
     }
-  }
-`;
+  `;
+
 
 function SignUp() {
   const { setAccessToken, setUser } = useAuth();
@@ -65,6 +65,8 @@ function SignUp() {
     register({ variables: data, onCompleted: handleRegisterCompleted });
     reset();
   };
+
+
 
 
   if (isNavigating) {
@@ -169,6 +171,8 @@ function SignUp() {
                   />
                 )}
               />
+
+           
 
               <Button
                 loading={loading}

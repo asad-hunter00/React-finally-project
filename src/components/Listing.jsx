@@ -1,17 +1,14 @@
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { Button, Typography } from "@mui/material";
+import { Button, Typography, CircularProgress } from "@mui/material";
 import { useState } from "react";
 
-import styled from "styled-components";
 import Grid from "@mui/material/Grid";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import useAuth from "../assets/Favorite";
-import {
-  Skeleton,
-  Pagination as MuiPagination,
-} from "@mui/material";
+import styled from "styled-components";
+import { Link, useParams } from "react-router";
+
+import Header from "./Header.jsx";
 
 const listingQuery = gql`
   query Listing($limit: Int, $page: Int, $search: String) {
@@ -22,15 +19,20 @@ const listingQuery = gql`
         pricePerNight
         rating
         images
+        location
+        category
+        guests
+        bedrooms
+        beds
+        bathrooms
       }
+
       pagination {
         totalPages
       }
     }
   }
 `;
-
-
 
 const addFavoriteMutation = gql`
   mutation AddFavorite($listingId: ID!) {
@@ -40,11 +42,9 @@ const addFavoriteMutation = gql`
   }
 `;
 
-
-
 const ListingWrapper = styled.div`
   width: 100%;
-  padding: 30px 48px;
+  padding: 0 48px 40px;
   box-sizing: border-box;
 `;
 
@@ -71,10 +71,7 @@ const Guest = styled.div`
   border-radius: 20px;
 
   font-size: 12px;
-  font-family: sans-serif;
   color: #333;
-
-  z-index: 2;
 `;
 
 const LikeButton = styled(Button)`
@@ -103,8 +100,6 @@ const LikeButton = styled(Button)`
 
 const StyledTitle = styled.h3`
   margin: 10px 0 5px;
-
-  font-family: sans-serif;
   font-size: 14px;
   font-weight: 400;
 
@@ -115,15 +110,11 @@ const StyledTitle = styled.h3`
 
 const Rating = styled.p`
   margin: 0 0 4px;
-
-  font-family: sans-serif;
   font-size: 13px;
 `;
 
 const Price = styled.p`
   margin: 0;
-
-  font-family: sans-serif;
   font-size: 13px;
 
   span {
@@ -139,125 +130,233 @@ const Pagination = styled.div`
 `;
 
 const PageButton = styled.button`
-  width: 36px;
-  height: 36px;
-
-  border: 1px solid #ddd;
-  border-radius: 50%;
-
-  background: ${({ active }) => active ? "#222" : "#fff"};
-  color: ${({ active }) => active ? "#fff" : "#222"};
-
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
 
-  &:hover {
-    background: #222;
-    color: white;
-  }
+  background: ${(props) => (props.$active ? "#000" : "#eee")};
+  color: ${(props) => (props.$active ? "#fff" : "#000")};
 `;
 
 function Listing() {
-  const { accessToken } = useAuth();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+
+  const { id } = useParams();
+
   const { data, loading, error } = useQuery(listingQuery, {
-    variables: { limit: 8, page: page, search: search },
+    variables: {
+      limit: 40,
+      page,
+      search,
+    },
   });
 
-  const [
-    addFavorite,
-    { data: mutData, loading: mutLoading, error: mutError },
-  ] = useMutation(addFavoriteMutation)
-
-
-
-  
-
-
-  console.log(accessToken);
-
-  console.log(data);
-  console.log(error);
+  const [addFavorite] = useMutation(addFavoriteMutation);
 
   const totalPage = data?.listings?.pagination?.totalPages;
 
-  console.log(totalPage);
+  const selectedListing = data?.listings?.items?.find(
+    (item) => item.id === id
+  );
+
+  if (id) {
+    if (loading) {
+      return (
+        <>
+          <Header />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "60px",
+            }}
+          >
+            <CircularProgress />
+          </div>
+        </>
+      );
+    }
+
+    if (error) {
+      return (
+        <>
+          <Header />
+
+          <Typography color="error">
+            {error.message}
+          </Typography>
+        </>
+      );
+    }
+
+    if (!selectedListing) {
+      return (
+        <>
+          <Header />
+
+          <Typography>
+            Listing topilmadi
+          </Typography>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Header />
+
+        <ListingWrapper>
+          <div style={{ paddingTop: "30px" }}>
+            <img
+              src={selectedListing.images}
+              alt={selectedListing.title}
+              style={{
+                width: "500px",
+                maxWidth: "100%",
+                height: "350px",
+                objectFit: "cover",
+                borderRadius: "15px",
+              }}
+            />
+
+            <h1>{selectedListing.title}</h1>
+
+            <p>⭐ {selectedListing.rating}</p>
+
+            <p>📍 {selectedListing.location}</p>
+
+            <p>🏠 {selectedListing.category}</p>
+
+            <p>👥 Guests: {selectedListing.guests}</p>
+
+            <p>🛏 Bedrooms: {selectedListing.bedrooms}</p>
+
+            <p>🛏 Beds: {selectedListing.beds}</p>
+
+            <p>🚿 Bathrooms: {selectedListing.bathrooms}</p>
+
+            <h3>
+              ${selectedListing.pricePerNight} / night
+            </h3>
+          </div>
+        </ListingWrapper>
+      </>
+    );
+  }
 
   return (
-    <ListingWrapper>
-      <input
-        type="text"
-        onChange={(e) => setSearch(e.target.value)}
-      />
+    <>
+      <Header />
 
-      {error && (
-        <Typography color="error">
-          {error.message}
-        </Typography>
-      )}
+      <ListingWrapper>
+        <input
+          type="text"
+          placeholder="Search..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          style={{
+            margin: "30px 0",
+            padding: "10px",
+            width: "300px",
+          }}
+        />
 
-      {loading && <h4>Loading....</h4>}
+        {error && (
+          <Typography color="error">
+            {error.message}
+          </Typography>
+        )}
 
-      <Grid container spacing={3}>
-        {data?.listings?.items?.map((item) => (
-          <Grid
-            key={item.id}
-            size={{ xs: 12, sm: 6, md: 3 }}
+        {loading && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "40px",
+            }}
           >
-            <StyledBoxWrapper>
+            <CircularProgress />
+          </div>
+        )}
 
-              <StyledImage
-                src={item.images}
-                alt={item.title}
-              />
-
-              <Guest>
-                Guest favorite
-              </Guest>
-
-              <LikeButton
-                onClick={() =>
-                  addFavorite({
-                    variables: {
-                      listingId: item.id,
-                    },
-                  })
-                }
+        <Grid container spacing={3}>
+          {data?.listings?.items?.map((item) => (
+            <Grid
+              key={item.id}
+              size={{ xs: 12, sm: 6, md: 3 }}
+            >
+              <Link
+                to={`/listings/${item.id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
               >
-                <FavoriteBorderIcon />
-              </LikeButton>
+                <StyledBoxWrapper>
+                  <StyledImage
+                    src={item.images}
+                    alt={item.title}
+                  />
 
-              <StyledTitle>
-                {item.title}
-              </StyledTitle>
+                  <Guest>
+                    Guest favorite
+                  </Guest>
 
-              <Rating>
-                ⭐ {item.rating}
-              </Rating>
+                  <LikeButton
+                    onClick={(e) => {
+                      e.preventDefault();
 
-              <Price>
-                <span>${item.pricePerNight}</span> night
-              </Price>
+                      addFavorite({
+                        variables: {
+                          listingId: item.id,
+                        },
+                      });
+                    }}
+                  >
+                    <FavoriteBorderIcon />
+                  </LikeButton>
 
-            </StyledBoxWrapper>
-          </Grid>
-        ))}
-      </Grid>
+                  <StyledTitle>
+                    {item.title}
+                  </StyledTitle>
 
-      <Pagination>
-        {new Array(totalPage).fill("").map((_, index) => (
-          <PageButton
-            key={index}
-            active={page === index + 1}
-            onClick={() => setPage(index + 1)}
-          >
-            {index + 1}
-          </PageButton>
-        ))}
-      </Pagination>
+                  <Rating>
+                    ⭐ {item.rating}
+                  </Rating>
 
-    </ListingWrapper>
+                  <Price>
+                    <span>
+                      ${item.pricePerNight}
+                    </span>{" "}
+                    for 2 night
+                  </Price>
+                </StyledBoxWrapper>
+              </Link>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Pagination>
+          {new Array(totalPage)
+            .fill("")
+            .map((_, index) => (
+              <PageButton
+                key={index}
+                $active={page === index + 1}
+                onClick={() => setPage(index + 1)}
+              >
+                {index + 1}
+              </PageButton>
+            ))}
+        </Pagination>
+      </ListingWrapper>
+    </>
   );
 }
 
