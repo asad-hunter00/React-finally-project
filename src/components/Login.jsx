@@ -12,6 +12,7 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { Controller, useForm } from "react-hook-form";
 import styled from "styled-components";
+import { Link } from "react-router";
 
 import useAuth from "../assets/Favorite";
 
@@ -117,6 +118,14 @@ function Login() {
                 />
               )}
             />
+            <Typography style={{textAlign: "center"}}>
+              Hisobingiz bormi? 
+              <Link to="/register" style={{color: "red"}}>
+              Sign-up
+              </Link>
+
+
+            </Typography>
 
             <Button
               type="submit"

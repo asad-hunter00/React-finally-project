@@ -20,24 +20,23 @@ import { Link, useNavigate } from "react-router";
 import styled from "styled-components";
 
 const SIGNUP_MUTATION = gql`
-    mutation Register($email: String!, $name: String!, $password: String!) {
-      register(email: $email, name: $name, password: $password) {
-        accessToken
-        user {
-          id
-          email
-        }
+  mutation Register($email: String!, $name: String!, $password: String!) {
+    register(email: $email, name: $name, password: $password) {
+      accessToken
+      user {
+        id
+        email
       }
     }
-  `;
-
+  }
+`;
 
 function SignUp() {
   const { setAccessToken, setUser } = useAuth();
   const [register, { data, loading }] = useMutation(SIGNUP_MUTATION);
   const [showPassword, setShowPassword] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { control, handleSubmit, reset } = useForm({
     defaultValues: {
       name: "",
@@ -51,12 +50,11 @@ function SignUp() {
     setAccessToken(data?.register?.accessToken);
     setUser(data.register.user);
 
-    setIsNavigating(true)
-
+    setIsNavigating(true);
 
     setTimeout(() => {
-      navigate("/")
-    }, 2000)
+      navigate("/");
+    }, 2000);
   };
 
   const onSubmit = (data) => {
@@ -66,27 +64,30 @@ function SignUp() {
     reset();
   };
 
-
-
-
   if (isNavigating) {
     return (
-      <div style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "15px",
-      }}>
-        <h1 style={{
-          margin: 0,
-          fontSize: "40px",
-        }}>Aibnb</h1>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: "15px",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "40px",
+          }}
+        >
+          Aibnb
+        </h1>
         <CircularProgress size={35} />
         <p style={{ margin: 0 }}>Loading...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -162,7 +163,11 @@ function SignUp() {
                               onClick={() => setShowPassword(!showPassword)}
                               edge="end"
                             >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                              {showPassword ? (
+                                <VisibilityOff />
+                              ) : (
+                                <Visibility />
+                              )}
                             </IconButton>
                           </InputAdornment>
                         ),
@@ -172,7 +177,12 @@ function SignUp() {
                 )}
               />
 
-           
+              <Typography style={{ textAlign: "center" }}>
+                Hisobingiz kiring!
+                <Link to="/login" style={{ color: "red" }}>
+                  Sign-in
+                </Link>
+              </Typography>
 
               <Button
                 loading={loading}

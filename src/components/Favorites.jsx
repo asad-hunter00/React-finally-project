@@ -4,7 +4,7 @@ import { CircularProgress } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import Grid from "@mui/material/Grid";
 import styled from "styled-components";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import {
   Wrapper,
@@ -16,6 +16,8 @@ import {
   Rating,
   Price,
 } from "../assets/FavoriteStyled.js";
+import { useEffect } from "react";
+import useAuth from "../assets/Favorite.js";
 
 const favoritesQuery = gql`
   query Favorites {
@@ -46,6 +48,9 @@ const removeFavoriteMutation = gql`
 function Favorites() {
   const { data, loading, error } = useQuery(favoritesQuery);
 
+  const { accessToken } = useAuth();
+  const navigate = useNavigate();
+
   const [removeFavorite] = useMutation(removeFavoriteMutation, {
     refetchQueries: [favoritesQuery],
   });
@@ -66,14 +71,12 @@ function Favorites() {
         </div>
       )}
 
+      
       {error && <p>{error.message}</p>}
 
       <Grid container spacing={3}>
         {data?.favorites?.map((item) => (
-          <Grid
-            key={item.id}
-            size={{ xs: 12, sm: 6, md: 3 }}
-          >
+          <Grid key={item.id} size={{ xs: 12, sm: 6, md: 3 }}>
             <Link
               to={`/favorites/${item.id}`}
               style={{
@@ -82,10 +85,7 @@ function Favorites() {
               }}
             >
               <Card>
-                <Image
-                  src={item.images}
-                  alt={item.title}
-                />
+                <Image src={item.images} alt={item.title} />
 
                 <FavoriteButton
                   onClick={(e) => {
@@ -101,13 +101,9 @@ function Favorites() {
                   <FavoriteIcon />
                 </FavoriteButton>
 
-                <CardTitle>
-                  {item.title}
-                </CardTitle>
+                <CardTitle>{item.title}</CardTitle>
 
-                <Rating>
-                  ⭐ {item.rating}
-                </Rating>
+                <Rating>⭐ {item.rating}</Rating>
 
                 <Price>
                   <span>${item.pricePerNight}</span> night
@@ -115,6 +111,8 @@ function Favorites() {
               </Card>
             </Link>
           </Grid>
+
+          
         ))}
       </Grid>
     </Wrapper>

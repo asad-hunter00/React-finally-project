@@ -1,30 +1,57 @@
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { Button, Typography, CircularProgress } from "@mui/material";
+import { Button, Typography, CircularProgress, TextField } from "@mui/material";
 import { useState } from "react";
 
 import Grid from "@mui/material/Grid";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import styled from "styled-components";
 import { Link, useParams } from "react-router";
+import Footer from "./Footer.jsx";
+import PushPinIcon from "@mui/icons-material/PushPin";
+import PeopleIcon from "@mui/icons-material/People";
+import BedIcon from "@mui/icons-material/Bed";
+import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
+import ShowerIcon from "@mui/icons-material/Shower";
+import StarIcon from "@mui/icons-material/Star";
+
+import Box from "@mui/material/Box";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
 
 import Header from "./Header.jsx";
+import House from "@mui/icons-material/Home";
 
 const listingQuery = gql`
-  query Listing($limit: Int, $page: Int, $search: String) {
-    listings(limit: $limit, page: $page, search: $search) {
+  query Listings(
+    $limit: Int
+    $page: Int
+    $search: String
+    $category: ListingCategory
+  ) {
+    listings(limit: $limit, page: $page, search: $search, category: $category) {
       items {
         id
-        title
-        pricePerNight
-        rating
-        images
-        location
-        category
-        guests
+        address
+        amenities
+        bathrooms
         bedrooms
         beds
-        bathrooms
+        category
+        createdAt
+        description
+        guests
+        id
+        images
+        isFavorite
+        isFeatured
+        location
+        pricePerNight
+        rating
+        reviewsCount
+        title
       }
 
       pagination {
@@ -40,6 +67,13 @@ const addFavoriteMutation = gql`
       id
     }
   }
+`;
+const FilterCategory = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 20px;
+  margin-bottom: 20px;
 `;
 
 const ListingWrapper = styled.div`
@@ -142,14 +176,16 @@ const PageButton = styled.button`
 function Listing() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [category, setCategory] = useState(null);
 
   const { id } = useParams();
 
   const { data, loading, error } = useQuery(listingQuery, {
     variables: {
-      limit: 40,
+      limit: 5,
       page,
       search,
+      category: category,
     },
   });
 
@@ -157,9 +193,7 @@ function Listing() {
 
   const totalPage = data?.listings?.pagination?.totalPages;
 
-  const selectedListing = data?.listings?.items?.find(
-    (item) => item.id === id
-  );
+  const selectedListing = data?.listings?.items?.find((item) => item.id === id);
 
   if (id) {
     if (loading) {
@@ -185,9 +219,7 @@ function Listing() {
         <>
           <Header />
 
-          <Typography color="error">
-            {error.message}
-          </Typography>
+          <Typography color="error">{error.message}</Typography>
         </>
       );
     }
@@ -197,9 +229,7 @@ function Listing() {
         <>
           <Header />
 
-          <Typography>
-            Listing topilmadi
-          </Typography>
+          <Typography>Listing topilmadi</Typography>
         </>
       );
     }
@@ -212,7 +242,6 @@ function Listing() {
           <div style={{ paddingTop: "30px" }}>
             <img
               src={selectedListing.images}
-              alt={selectedListing.title}
               style={{
                 width: "500px",
                 maxWidth: "100%",
@@ -224,23 +253,35 @@ function Listing() {
 
             <h1>{selectedListing.title}</h1>
 
-            <p>⭐ {selectedListing.rating}</p>
+            <p>
+              <StarIcon /> {selectedListing.rating}
+            </p>
 
-            <p>📍 {selectedListing.location}</p>
+            <p>
+              <PushPinIcon /> {selectedListing.location}
+            </p>
 
-            <p>🏠 {selectedListing.category}</p>
+            <p>
+              <House /> {selectedListing.category}
+            </p>
 
-            <p>👥 Guests: {selectedListing.guests}</p>
+            <p>
+              <PeopleIcon /> Guests: {selectedListing.guests}
+            </p>
 
-            <p>🛏 Bedrooms: {selectedListing.bedrooms}</p>
+            <p>
+              <BedIcon /> Bedrooms: {selectedListing.bedrooms}
+            </p>
 
-            <p>🛏 Beds: {selectedListing.beds}</p>
+            <p>
+              <BedIcon /> Beds: {selectedListing.beds}
+            </p>
 
-            <p>🚿 Bathrooms: {selectedListing.bathrooms}</p>
+            <p>
+              <ShowerIcon /> Bathrooms: {selectedListing.bathrooms}
+            </p>
 
-            <h3>
-              ${selectedListing.pricePerNight} / night
-            </h3>
+            <h3>${selectedListing.pricePerNight} / night</h3>
           </div>
         </ListingWrapper>
       </>
@@ -252,26 +293,44 @@ function Listing() {
       <Header />
 
       <ListingWrapper>
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          style={{
-            margin: "30px 0",
-            padding: "10px",
-            width: "300px",
-          }}
-        />
+        <FilterCategory>
+          <TextField
+            type="text"
+            label="Search..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            style={{
+              margin: "30px 0",
+              width: "300px",
+            }}
+          />
 
-        {error && (
-          <Typography color="error">
-            {error.message}
-          </Typography>
-        )}
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Age</InputLabel>
+            <Select
+              value={category}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                setPage(1);
+              }}
+              label="Age"
+              style={{
+                width: "300px",
+              }}
+            >
+              <MenuItem value="APARTMENT">APPARTMENT</MenuItem>
+              <MenuItem value="HOTEL">HOTEL</MenuItem>
+              <MenuItem value="HOUSE">HOUSE</MenuItem>
+              <MenuItem value="VILLA">VILLA</MenuItem>
+              <MenuItem value="CABIN">CABIN</MenuItem>
+            </Select>
+          </FormControl>
+        </FilterCategory>
+
+        {error && <Typography color="error">{error.message}</Typography>}
 
         {loading && (
           <div
@@ -287,75 +346,58 @@ function Listing() {
 
         <Grid container spacing={3}>
           {data?.listings?.items?.map((item) => (
-            <Grid
-              key={item.id}
-              size={{ xs: 12, sm: 6, md: 3 }}
-            >
-              <Link
-                to={`/listings/${item.id}`}
-                style={{
-                  textDecoration: "none",
-                  color: "inherit",
-                }}
-              >
-                <StyledBoxWrapper>
-                  <StyledImage
-                    src={item.images}
-                    alt={item.title}
-                  />
+            <Grid key={item.id} size={{ xs: 12, sm: 6, md: 3 }}>
+              <StyledBoxWrapper>
+                <Link
+                  to={`/listings/${item.id}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  <StyledImage src={item.images} alt={item.title} />
+                </Link>
+                <Guest>Guest favorite</Guest>
 
-                  <Guest>
-                    Guest favorite
-                  </Guest>
+                <LikeButton
+                  onClick={() => {
+                    addFavorite({
+                      variables: {
+                        listingId: item.id,
+                      },
+                    });
+                  }}
+                >
+                  <FavoriteBorderIcon />
+                </LikeButton>
 
-                  <LikeButton
-                    onClick={(e) => {
-                      e.preventDefault();
+                <StyledTitle>{item.title}</StyledTitle>
 
-                      addFavorite({
-                        variables: {
-                          listingId: item.id,
-                        },
-                      });
-                    }}
-                  >
-                    <FavoriteBorderIcon />
-                  </LikeButton>
+                <Rating>⭐ {item.rating}</Rating>
 
-                  <StyledTitle>
-                    {item.title}
-                  </StyledTitle>
-
-                  <Rating>
-                    ⭐ {item.rating}
-                  </Rating>
-
-                  <Price>
-                    <span>
-                      ${item.pricePerNight}
-                    </span>{" "}
-                    for 2 night
-                  </Price>
-                </StyledBoxWrapper>
-              </Link>
+                <Price>
+                  <span>${item.pricePerNight}</span>
+                  for 2 night
+                </Price>
+              </StyledBoxWrapper>
             </Grid>
           ))}
         </Grid>
 
         <Pagination>
-          {new Array(totalPage)
-            .fill("")
-            .map((_, index) => (
-              <PageButton
-                key={index}
-                $active={page === index + 1}
-                onClick={() => setPage(index + 1)}
-              >
-                {index + 1}
-              </PageButton>
-            ))}
+          {new Array(totalPage).fill("").map((_, index) => (
+            <PageButton
+              key={index}
+              $active={page === index + 1}
+              onClick={() => setPage(index + 1)}
+            >
+              {index + 1}
+            </PageButton>
+          ))}
         </Pagination>
       </ListingWrapper>
+
+      <Footer />
     </>
   );
 }
