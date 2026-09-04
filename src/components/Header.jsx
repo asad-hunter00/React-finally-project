@@ -1,11 +1,16 @@
-import { IconButton, Modal } from "@mui/material";
+import { Button, IconButton, Modal } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
 import styled from "styled-components";
-import CloseIcon from "@mui/icons-material/Close";
 import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
-import { deepOrange, deepPurple } from "@mui/material/colors";
+import { deepOrange } from "@mui/material/colors";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import useAuth from "../assets/Favorite";
+import { set } from "react-hook-form";
+import { Link } from "react-router";
 
 const HeaderWrapper = styled.div`
   width: 100%;
@@ -111,6 +116,30 @@ const MenuButton = styled(IconButton)`
 `;
 
 function Header() {
+  const [isLogout, setIsLogout] = useState(false);
+  const [isLogin, setLogin] = useState();
+  const { accessToken } = useAuth();
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    handleMenuClose();
+    localStorage.clear();
+    setLogin(false);
+    setIsLogout(false);
+  };
+
+  useEffect(() => {
+    if (accessToken.length > 0) {
+      setLogin(true);
+    } else {
+      setLogin(false);
+    }
+  }, [accessToken]);
+
   return (
     <HeaderWrapper>
       <TopHeader>
@@ -143,11 +172,57 @@ function Header() {
           </Category>
         </Categories>
 
-        <Profile>
-          <Stack direction="row" spacing={2}>
-            <Avatar sx={{ bgcolor: deepOrange[500] }}>A</Avatar>
-          </Stack>
-        </Profile>
+        <Modal open={isLogout} onClose={() => setIsLogout(false)}>
+          <div
+            style={{
+              background: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+            }}
+          >
+            <p>Are you sure you want to logout?</p>
+            <button onClick={handleLogout}>Yes</button>
+            <button onClick={() => setIsLogout(false)}>No</button>
+          </div>
+        </Modal>
+        {isLogin ? (
+          <Profile>
+            <Stack direction="row" spacing={2}>
+              <div>
+                <Avatar
+                  sx={{ bgcolor: deepOrange[500] }}
+                  onClick={(event) => setAnchorEl(event.currentTarget)}
+                >
+                  A
+                </Avatar>
+                <Menu
+                  id="basic-menu"
+                  anchorEl={anchorEl}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                  MenuListProps={{
+                    "aria-labelledby": "basic-button",
+                  }}
+                >
+                  <MenuItem onClick={() => setIsLogout(true)}>Logout</MenuItem>
+                </Menu>
+              </div>
+            </Stack>
+          </Profile>
+        ) : (
+          <>
+            <Link to="/login">
+              <Button>Login</Button>
+            </Link>
+            <Link to="/register">
+              <Button>Register</Button>
+            </Link>
+          </>
+        )}
       </TopHeader>
     </HeaderWrapper>
   );
