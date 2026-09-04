@@ -1,23 +1,19 @@
-import { Button, IconButton, Modal } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import styled from "styled-components";
-import Avatar from "@mui/material/Avatar";
-import Stack from "@mui/material/Stack";
+import { Button, Avatar, Stack, Modal, Menu, MenuItem } from "@mui/material";
 import { deepOrange } from "@mui/material/colors";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import styled from "styled-components";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import useAuth from "../assets/Favorite";
-import { set } from "react-hook-form";
-import { Link } from "react-router";
 
 const HeaderWrapper = styled.div`
   width: 100%;
   background: #fff;
   border-bottom: 1px solid #eee;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 `;
-
 const TopHeader = styled.div`
   height: 85px;
   display: flex;
@@ -39,19 +35,16 @@ const Categories = styled.div`
 
 const Category = styled.div`
   display: flex;
-
   align-items: center;
-
   height: 70px;
   min-width: 80px;
   color: #717171;
   font-size: 16px;
   font-family: sans-serif;
-
   cursor: pointer;
-
   position: relative;
   justify-content: center;
+
   &:hover {
     color: #222;
   }
@@ -66,17 +59,16 @@ const Category = styled.div`
     bottom: 0;
     left: 0;
     right: 0;
-
     height: 3px;
     background: #222;
   }
 `;
+
 const CategoryImage = styled.img`
   width: 75px;
   height: 75px;
   object-fit: contain;
   margin-bottom: 5px;
-
   transition: 0.2s;
 
   &:hover {
@@ -90,36 +82,78 @@ const Profile = styled.div`
   gap: 12px;
 `;
 
-const UserLetter = styled.div`
-  width: 38px;
-  height: 38px;
-  border: 1px solid #ddd;
-  border-radius: 50%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #ff385c;
-  font-size: 15px;
-  font-weight: 600;
+const LogoutModal = styled.div`
+  width: 400px;
+  max-width: calc(100% - 40px);
+  background: white;
+  border-radius: 20px;
+  padding: 35px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  box-sizing: border-box;
 `;
 
-const MenuButton = styled(IconButton)`
-  width: 42px !important;
-  height: 42px !important;
-  border: 1px solid #ddd !important;
+const LogoutImage = styled.img`
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 15px;
+`;
+
+const LogoutTitle = styled.h2`
+  margin: 5px 0 10px;
+  font-family: sans-serif;
+  font-size: 25px;
+`;
+
+const LogoutText = styled.p`
+  color: #717171;
+  font-size: 15px;
+  margin-bottom: 25px;
+  font-family: sans-serif;
+`;
+
+const LogoutButtons = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
+const CancelButton = styled(Button)`
+  flex: 1;
+  height: 45px !important;
+  border: 1px solid #222 !important;
+  color: #222 !important;
+  border-radius: 10px !important;
+`;
+
+const AgreeButton = styled(Button)`
+  flex: 1;
+  height: 45px !important;
+  background: #ff385c !important;
+  color: white !important;
+  border-radius: 10px !important;
 
   &:hover {
-    background: #f7f7f7 !important;
+    background: #e31c5f !important;
   }
 `;
 
 function Header() {
   const [isLogout, setIsLogout] = useState(false);
-  const [isLogin, setLogin] = useState();
-  const { accessToken } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const navigate = useNavigate();
+
+  const {
+    accessToken,
+    user,
+    setAccessToken,
+    setUser,
+  } = useAuth();
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -127,28 +161,25 @@ function Header() {
 
   const handleLogout = () => {
     handleMenuClose();
-    localStorage.clear();
-    setLogin(false);
     setIsLogout(false);
-  };
 
-  useEffect(() => {
-    if (accessToken.length > 0) {
-      setLogin(true);
-    } else {
-      setLogin(false);
-    }
-  }, [accessToken]);
+    setAccessToken(null);
+    setUser(null);
+
+    localStorage.removeItem("auth");
+
+    navigate("/");
+  };
 
   return (
     <HeaderWrapper>
       <TopHeader>
-        <a href="/">
+        <Link to="/">
           <Logo
             src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png"
             alt="Airbnb"
           />
-        </a>
+        </Link>
 
         <Categories>
           <Category className="active">
@@ -172,58 +203,92 @@ function Header() {
           </Category>
         </Categories>
 
-        <Modal open={isLogout} onClose={() => setIsLogout(false)}>
-          <div
-            style={{
-              background: "white",
-              padding: "24px",
-              borderRadius: "8px",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-            }}
-          >
-            <p>Are you sure you want to logout?</p>
-            <button onClick={handleLogout}>Yes</button>
-            <button onClick={() => setIsLogout(false)}>No</button>
-          </div>
-        </Modal>
-        {isLogin ? (
+        {accessToken ? (
           <Profile>
-            <Stack direction="row" spacing={2}>
-              <div>
-                <Avatar
-                  sx={{ bgcolor: deepOrange[500] }}
-                  onClick={(event) => setAnchorEl(event.currentTarget)}
-                >
-                  A
-                </Avatar>
-                <Menu
-                  id="basic-menu"
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  MenuListProps={{
-                    "aria-labelledby": "basic-button",
-                  }}
-                >
-                  <MenuItem onClick={() => setIsLogout(true)}>Logout</MenuItem>
-                </Menu>
-              </div>
-            </Stack>
+            <Avatar
+              sx={{
+                bgcolor: deepOrange[500],
+                cursor: "pointer",
+              }}
+              onClick={(event) => setAnchorEl(event.currentTarget)}
+            >
+              {user?.name?.charAt(0)?.toUpperCase() || "A"}
+            </Avatar>
+
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate("/favorites");
+                }}
+              >
+                ❤️ Favorites
+              </MenuItem>
+
+              <MenuItem
+                onClick={() => {
+                  handleMenuClose();
+                  navigate("/bookings");
+                }}
+              >
+                📅 Bookings
+              </MenuItem>
+
+              <MenuItem onClick={() => setIsLogout(true)}>
+                Logout
+              </MenuItem>
+            </Menu>
           </Profile>
         ) : (
-          <>
+          <Profile>
             <Link to="/login">
               <Button>Login</Button>
             </Link>
+
             <Link to="/register">
               <Button>Register</Button>
             </Link>
-          </>
+          </Profile>
         )}
       </TopHeader>
+
+      <Modal
+        open={isLogout}
+        onClose={() => setIsLogout(false)}
+      >
+        <LogoutModal>
+          <LogoutImage
+            src="https://png.pngtree.com/png-clipart/20200701/original/pngtree-red-error-icon-png-image_5418881.jpg"
+            alt="Logout"
+          />
+
+          <LogoutTitle>Are you sure?</LogoutTitle>
+
+          <LogoutText>
+            Are you sure you want to logout from your account?
+          </LogoutText>
+
+          <LogoutButtons>
+            <CancelButton
+              variant="outlined"
+              onClick={() => setIsLogout(false)}
+            >
+              Cancel
+            </CancelButton>
+
+            <AgreeButton
+              variant="contained"
+              onClick={handleLogout}
+            >
+              Agree
+            </AgreeButton>
+          </LogoutButtons>
+        </LogoutModal>
+      </Modal>
     </HeaderWrapper>
   );
 }

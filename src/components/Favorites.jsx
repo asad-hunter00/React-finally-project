@@ -1,10 +1,14 @@
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import { CircularProgress } from "@mui/material";
+import {
+  CircularProgress,
+  Button,
+  Typography,
+} from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import Grid from "@mui/material/Grid";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 
 import {
   Wrapper,
@@ -16,8 +20,8 @@ import {
   Rating,
   Price,
 } from "../assets/FavoriteStyled.js";
-import { useEffect } from "react";
-import useAuth from "../assets/Favorite.js";
+
+import Header from "./Header.jsx";
 
 const favoritesQuery = gql`
   query Favorites {
@@ -45,77 +49,139 @@ const removeFavoriteMutation = gql`
   }
 `;
 
+const EmptyWrapper = styled.div`
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  text-align: center;
+`;
+
 function Favorites() {
   const { data, loading, error } = useQuery(favoritesQuery);
-
-  const { accessToken } = useAuth();
-  const navigate = useNavigate();
 
   const [removeFavorite] = useMutation(removeFavoriteMutation, {
     refetchQueries: [favoritesQuery],
   });
 
-  return (
-    <Wrapper>
-      <Title>❤️ Favorites</Title>
+  if (loading) {
+    return (
+      <>
+        <Header />
 
-      {loading && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            padding: "40px",
-          }}
-        >
+        <EmptyWrapper>
           <CircularProgress />
-        </div>
-      )}
+        </EmptyWrapper>
+      </>
+    );
+  }
 
-      
-      {error && <p>{error.message}</p>}
+  if (error) {
+    return (
+      <>
+        <Header />
 
-      <Grid container spacing={3}>
-        {data?.favorites?.map((item) => (
-          <Grid key={item.id} size={{ xs: 12, sm: 6, md: 3 }}>
-            <Link
-              to={`/favorites/${item.id}`}
-              style={{
-                textDecoration: "none",
-                color: "inherit",
-              }}
-            >
-              <Card>
-                <Image src={item.images} alt={item.title} />
+        <EmptyWrapper>
+          <Typography color="error">
+            {error.message}
+          </Typography>
+        </EmptyWrapper>
+      </>
+    );
+  }
 
-                <FavoriteButton
-                  onClick={(e) => {
-                    e.preventDefault();
+  const favorites = data?.favorites || [];
 
-                    removeFavorite({
-                      variables: {
-                        listingId: item.id,
-                      },
-                    });
-                  }}
-                >
-                  <FavoriteIcon />
-                </FavoriteButton>
+  return (
+    <>
+      <Header />
 
-                <CardTitle>{item.title}</CardTitle>
+      <Wrapper style={{ paddingTop: "120px" }}>
+        <Title>❤️ Favorites</Title>
 
-                <Rating>⭐ {item.rating}</Rating>
+        {favorites.length === 0 ? (
+          <EmptyWrapper>
+            <Typography variant="h5">
+              Hali hech narsa yo‘q
+            </Typography>
 
-                <Price>
-                  <span>${item.pricePerNight}</span> night
-                </Price>
-              </Card>
+            <Typography color="text.secondary">
+              Sevimli uylaringiz shu yerda ko‘rinadi.
+            </Typography>
+
+            <Link to="/listings">
+              <Button
+                variant="contained"
+                sx={{
+                  background: "#ff385c",
+                  "&:hover": {
+                    background: "#e31c5f",
+                  },
+                }}
+              >
+                Uylarni ko‘rish
+              </Button>
             </Link>
-          </Grid>
+          </EmptyWrapper>
+        ) : (
+          <Grid container spacing={3}>
+            {favorites.map((item) => (
+              <Grid
+                key={item.id}
+                size={{ xs: 12, sm: 6, md: 3 }}
+              >
+                <Card>
 
-          
-        ))}
-      </Grid>
-    </Wrapper>
+                  <Link
+                    to={`/listings/${item.id}`}
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                    }}
+                  >
+                    <Image
+                      src={
+                        Array.isArray(item.images)
+                          ? item.images[0]
+                          : item.images
+                      }
+                      alt={item.title}
+                    />
+
+                    <CardTitle>
+                      {item.title}
+                    </CardTitle>
+
+                    <Rating>
+                      ⭐ {item.rating}
+                    </Rating>
+
+                    <Price>
+                      <span>${item.pricePerNight}</span> night
+                    </Price>
+                  </Link>
+
+                  <FavoriteButton
+                    onClick={() => {
+                      removeFavorite({
+                        variables: {
+                          listingId: item.id,
+                        },
+                      });
+                    }}
+                  >
+                    <FavoriteIcon />
+                  </FavoriteButton>
+
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Wrapper>
+    </>
   );
 }
 
