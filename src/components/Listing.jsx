@@ -28,6 +28,7 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
+import Booking from "./Booking.jsx";
 
 
 const listingQuery = gql`
@@ -669,6 +670,9 @@ function Listing() {
             </InputLabel>
 
             <CategorySelect
+            style={{
+              width: "300px",
+            }}
               labelId="category-label"
               value={category}
               onChange={(e) => {
@@ -764,6 +768,7 @@ function Listing() {
             )
           )}
         </Grid>
+
 
 
         <Pagination>
