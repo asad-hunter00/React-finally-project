@@ -4,6 +4,9 @@ import styled from "styled-components";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import useAuth from "../assets/Favorite";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import BookIcon from '@mui/icons-material/Book';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 const HeaderWrapper = styled.div`
   width: 100%;
@@ -226,7 +229,7 @@ function Header() {
                   navigate("/favorites");
                 }}
               >
-                ❤️ Favorites
+                <FavoriteBorderIcon /> Favorites
               </MenuItem>
 
               <MenuItem
@@ -235,19 +238,17 @@ function Header() {
                   navigate("/bookings");
                 }}
               >
-                📅 Bookings
+                <BookIcon /> Bookings
               </MenuItem>
 
-              {user?.email === "admin@example.com" && (
                 <MenuItem
                   onClick={() => {
                     handleMenuClose();
                     navigate("/admin");
                   }}
                 >
-                  Admin Panel
+                <AdminPanelSettingsIcon />  Admin Panel
                 </MenuItem>
-              )}
 
 
               <MenuItem onClick={() => setIsLogout(true)}>

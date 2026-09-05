@@ -7,6 +7,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Favorites from "./components/Favorites.jsx";
 import Login from "./components/Login.jsx";
+import Admin from "./components/Admin.jsx"
 
 function App() {
   return (
@@ -16,9 +17,9 @@ function App() {
 
         <Routes>
           <Route path="/" element={<Listing />} />
-
           <Route path="/register" element={<SignUp />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/admin" element={<Admin />}></Route>
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/listings/:id" element={<Listing />} />
         </Routes>
