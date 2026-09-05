@@ -238,6 +238,18 @@ function Header() {
                 📅 Bookings
               </MenuItem>
 
+              {user?.email === "admin@example.com" && (
+                <MenuItem
+                  onClick={() => {
+                    handleMenuClose();
+                    navigate("/admin");
+                  }}
+                >
+                  Admin Panel
+                </MenuItem>
+              )}
+
+
               <MenuItem onClick={() => setIsLogout(true)}>
                 Logout
               </MenuItem>
