@@ -2,11 +2,13 @@ import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
 import { Button, Typography, TextField, Skeleton } from "@mui/material";
 import { useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 import Grid from "@mui/material/Grid";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import styled from "styled-components";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 import Footer from "./Footer.jsx";
 import Header from "./Header.jsx";
@@ -23,6 +25,7 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Booking from "./Booking.jsx";
+import useAuth from "../assets/Favorite.js";
 
 const listingQuery = gql`
   query Listings(
@@ -63,6 +66,14 @@ const listingQuery = gql`
 const addFavoriteMutation = gql`
   mutation AddFavorite($listingId: ID!) {
     addFavorite(listingId: $listingId) {
+      id
+    }
+  }
+`;
+
+const removeFavoriteMutation = gql`
+  mutation RemoveFavorite($listingId: ID!) {
+    removeFavorite(listingId: $listingId) {
       id
     }
   }
@@ -281,6 +292,8 @@ function Listing() {
   const hasLoadedListings = useRef(false);
 
   const { id } = useParams();
+  const navigate = useNavigate();
+  const accessToken = useAuth((state) => state.accessToken);
 
   const { data, loading, error } = useQuery(listingQuery, {
     notifyOnNetworkStatusChange: true,
@@ -293,6 +306,29 @@ function Listing() {
   });
 
   const [addFavorite] = useMutation(addFavoriteMutation);
+  const [removeFavorite] = useMutation(removeFavoriteMutation);
+
+  const handleFavorite = async (listing) => {
+    if (!accessToken) {
+      navigate("/login");
+      return;
+    }
+
+    const mutation = listing.isFavorite ? removeFavorite : addFavorite;
+
+    await mutation({
+      variables: {
+        listingId: listing.id,
+      },
+      refetchQueries: [listingQuery],
+    });
+
+    toast.success(
+      listing.isFavorite
+        ? "Sevimlilardan olib tashlandi"
+        : "Sevimlilarga qo‘shildi",
+    );
+  };
 
   const totalPage = data?.listings?.pagination?.totalPages || 0;
 
@@ -400,8 +436,12 @@ function Listing() {
                 </DetailLocation>
               </div>
 
-              <FavoriteButton>
-                <FavoriteBorderIcon />
+              <FavoriteButton onClick={() => handleFavorite(selectedListing)}>
+                {selectedListing.isFavorite ? (
+                  <FavoriteIcon />
+                ) : (
+                  <FavoriteBorderIcon />
+                )}
               </FavoriteButton>
             </DetailTop>
 
@@ -615,16 +655,8 @@ function Listing() {
 
                 <Guest>Guest favorite</Guest>
 
-                <LikeButton
-                  onClick={() => {
-                    addFavorite({
-                      variables: {
-                        listingId: item.id,
-                      },
-                    });
-                  }}
-                >
-                  <FavoriteBorderIcon />
+                <LikeButton onClick={() => handleFavorite(item)}>
+                  {item.isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                 </LikeButton>
 
                 <StyledTitle>{item.title}</StyledTitle>
