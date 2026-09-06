@@ -116,9 +116,7 @@ function Favorites() {
                 variant="contained"
                 sx={{
                   background: "#ff385c",
-                  "&:hover": {
-                    background: "#e31c5f",
-                  },
+
                 }}
               >
                 Uylarni ko‘rish

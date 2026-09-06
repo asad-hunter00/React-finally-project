@@ -1,3 +1,6 @@
+import { gql } from "@apollo/client";
+import { useMutation } from "@apollo/client/react";
+
 import {
   Button,
   Checkbox,
@@ -8,9 +11,19 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+
 import { Controller, useForm } from "react-hook-form";
-import { Link } from "react-router";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Link, useNavigate } from "react-router";
+import { toast } from "react-toastify";
+
+const ADD_HOME = gql`
+  mutation AddHome($input: CreateListingInput!) {
+    createListing(input: $input) {
+      id
+      title
+    }
+  }
+`;
 
 function Admin() {
   const { control, handleSubmit, reset } = useForm({
@@ -31,46 +44,55 @@ function Admin() {
     },
   });
 
-  const onSubmit = (data) => {
-   const newHome = {
-    title: data.title,
-    description: data.description,
-    category: data.category,
-    location: data.location,
-    address: data.address,
-    pricePerNight: data.pricePerNight,
-    guests: data.guests,
-    bedrooms: data.bedrooms,
-    beds: data.beds,
-    bathrooms: data.bathrooms,
-    images: data.images,
-    amenities: data.amenities,
-    isFeatured: data.isFeatured
-   }
-    console.log("NEW HOME:", newHome);
+  const [addHome] = useMutation(ADD_HOME);
+  const navigate = useNavigate();
 
+  const submit = (data) => {
+    const home = {
+      title: data.title,
+      description: data.description,
+      category: data.category,
+      location: data.location,
+      address: data.address,
+      pricePerNight: data.pricePerNight,
+      guests: data.guests,
+      bedrooms: data.bedrooms,
+      beds: data.beds,
+      bathrooms: data.bathrooms,
+      images: data.images,
+      amenities: data.amenities,
+      isFeatured: data.isFeatured,
+    };
+
+    
+
+    const newToast = toast.success("Uy qoshildi");
     reset();
+    navigate("/");
   };
 
   return (
-    <Paper
-      sx={{
-        p: 3,
-        maxWidth: 700,
-        margin: "40px auto",
-      }}
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
+    <Paper sx={{ p: 3, maxWidth: 700, margin: "40px auto" }}>
+      <form onSubmit={handleSubmit(submit)}>
         <Stack spacing={2}>
-          <a href="/">  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png?utm_source=ru.wikipedia.org&utm_campaign=index&utm_content=thumbnail" width={100}  /></a>
-          <Typography variant="h5">Admin panel</Typography>
 
+          <Link to="/">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Airbnb_Logo_B%C3%A9lo.svg/3840px-Airbnb_Logo_B%C3%A9lo.svg.png"
+              width={100}
+              alt="Airbnb"
+            />
+          </Link>
+
+          <Typography variant="h5">
+            Admin panel
+          </Typography>
 
           <Controller
             name="title"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Title" fullWidth />
+              <TextField {...field} label="Title" />
             )}
           />
 
@@ -83,7 +105,6 @@ function Admin() {
                 label="Description"
                 multiline
                 rows={3}
-                fullWidth
               />
             )}
           />
@@ -92,15 +113,11 @@ function Admin() {
             name="category"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Category" select fullWidth>
+              <TextField {...field} select label="Category">
                 <MenuItem value="APARTMENT">Apartment</MenuItem>
-
                 <MenuItem value="HOUSE">House</MenuItem>
-
                 <MenuItem value="VILLA">Villa</MenuItem>
-
                 <MenuItem value="CABIN">Cabin</MenuItem>
-
                 <MenuItem value="HOTEL">Hotel</MenuItem>
               </TextField>
             )}
@@ -110,7 +127,7 @@ function Admin() {
             name="location"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Location" fullWidth />
+              <TextField {...field} label="Location" />
             )}
           />
 
@@ -118,7 +135,7 @@ function Admin() {
             name="address"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Address" fullWidth />
+              <TextField {...field} label="Address" />
             )}
           />
 
@@ -126,12 +143,7 @@ function Admin() {
             name="pricePerNight"
             control={control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                label="Price per night"
-                type="number"
-                fullWidth
-              />
+              <TextField {...field} label="Price" type="number" />
             )}
           />
 
@@ -139,7 +151,7 @@ function Admin() {
             name="guests"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Guests" type="number" fullWidth />
+              <TextField {...field} label="Guests" type="number" />
             )}
           />
 
@@ -147,7 +159,7 @@ function Admin() {
             name="bedrooms"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Bedrooms" type="number" fullWidth />
+              <TextField {...field} label="Bedrooms" type="number" />
             )}
           />
 
@@ -155,7 +167,7 @@ function Admin() {
             name="beds"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Beds" type="number" fullWidth />
+              <TextField {...field} label="Beds" type="number" />
             )}
           />
 
@@ -163,7 +175,7 @@ function Admin() {
             name="bathrooms"
             control={control}
             render={({ field }) => (
-              <TextField {...field} label="Bathrooms" type="number" fullWidth />
+              <TextField {...field} label="Bathrooms" type="number" />
             )}
           />
 
@@ -173,9 +185,8 @@ function Admin() {
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Images URLs"
-                placeholder="URL://....."
-                fullWidth
+                label="Images"
+                placeholder="url1, url2"
               />
             )}
           />
@@ -187,8 +198,7 @@ function Admin() {
               <TextField
                 {...field}
                 label="Amenities"
-                placeholder="Wi-fi"
-                fullWidth
+                placeholder="Wi-Fi, Pool"
               />
             )}
           />
@@ -199,20 +209,26 @@ function Admin() {
             render={({ field }) => (
               <FormControlLabel
                 control={
-                  <Checkbox checked={field.value} onChange={field.onChange} />
+                  <Checkbox
+                    checked={field.value}
+                    onChange={field.onChange}
+                  />
                 }
-                label="Featred"
+                label="Featured"
               />
             )}
           />
 
           <Button type="submit" variant="contained">
-            Home add
+            Add Home
           </Button>
 
-          <Link to="/" >
-            <Button fullWidth variant="contained">Cancel</Button>
+          <Link to="/">
+            <Button fullWidth variant="outlined">
+              Cancel
+            </Button>
           </Link>
+
         </Stack>
       </form>
     </Paper>
