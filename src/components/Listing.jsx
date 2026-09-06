@@ -224,7 +224,7 @@ const LikeButton = styled(Button)`
   position: absolute !important;
   top: 8px;
   right: 8px;
-
+  
   min-width: 38px !important;
   width: 38px;
   height: 38px;
@@ -653,7 +653,7 @@ function Listing() {
                   <StyledImage src={item.images} alt={item.title} />
                 </Link>
 
-                <Guest>Guest favorite</Guest>
+                <Guest>Guest fa vorite</Guest>
 
                 <LikeButton onClick={() => handleFavorite(item)}>
                   {item.isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
@@ -676,7 +676,7 @@ function Listing() {
             align="center"
             sx={{ marginTop: 4, color: "text.secondary" }}
           >
-            Natija Topilmadi!
+            Natick Topilmadi!
           </Typography>
         )}
 
