@@ -41,6 +41,7 @@ const BottomFooter = styled.div`
   .bottom-right {
     display: flex;
     gap: 12px;
+    padding: 0 10px;
   }
 
   a {
@@ -116,15 +117,15 @@ function Footer() {
 
       <BottomFooter>
         <div>
-          © 2026 Airbnb, Inc. All rights reserved.
+          © 2026 Airbnb, Footer Pricace
         </div>
 
         <div className="bottom-right">
-          <a href="#">Sitemap</a>
+          <a href="#">Map AIrbnb</a>
           <span>·</span>
-          <a href="#">Do not sell or share my personal information</a>
+          <a href="#">Listings, Admin, Favorite</a>
           <span>·</span>
-          <a href="#">Company details</a>
+          <a href="#">Airbnb  details</a>
         </div>
       </BottomFooter>
     </FooterWrapper>

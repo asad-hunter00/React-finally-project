@@ -15,7 +15,7 @@ const HeaderWrapper = styled.div`
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000;
+  z-index: 100; 
 `;
 const TopHeader = styled.div`
   height: 85px;
@@ -34,6 +34,10 @@ const Categories = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+
+ @media (max-width: 890px) {
+  display: none;
+ }
 `;
 
 const Category = styled.div`
@@ -56,15 +60,6 @@ const Category = styled.div`
     color: #222;
   }
 
-  &.active::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: #222;
-  }
 `;
 
 const CategoryImage = styled.img`
@@ -75,7 +70,7 @@ const CategoryImage = styled.img`
   transition: 0.2s;
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.3);
   }
 `;
 
@@ -83,6 +78,10 @@ const Profile = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+
+@media (max-width: 768px) {
+  padding: 0 90px;
+}
 `;
 
 const LogoutModal = styled.div`

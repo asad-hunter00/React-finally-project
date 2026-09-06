@@ -1,13 +1,7 @@
 import { gql } from "@apollo/client";
 import { useQuery, useMutation } from "@apollo/client/react";
-import {
-  Button,
-  Typography,
-  TextField,
-  Skeleton,
-} from "@mui/material";
-import { useState } from "react";
-
+import { Button, Typography, TextField, Skeleton } from "@mui/material";
+import { useRef, useState } from "react";
 
 import Grid from "@mui/material/Grid";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
@@ -30,7 +24,6 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import Booking from "./Booking.jsx";
 
-
 const listingQuery = gql`
   query Listings(
     $limit: Int
@@ -38,12 +31,7 @@ const listingQuery = gql`
     $search: String
     $category: ListingCategory
   ) {
-    listings(
-      limit: $limit
-      page: $page
-      search: $search
-      category: $category
-    ) {
+    listings(limit: $limit, page: $page, search: $search, category: $category) {
       items {
         id
         address
@@ -72,7 +60,6 @@ const listingQuery = gql`
   }
 `;
 
-
 const addFavoriteMutation = gql`
   mutation AddFavorite($listingId: ID!) {
     addFavorite(listingId: $listingId) {
@@ -81,7 +68,6 @@ const addFavoriteMutation = gql`
   }
 `;
 
-
 const FilterCategory = styled.div`
   display: flex;
   align-items: center;
@@ -89,12 +75,11 @@ const FilterCategory = styled.div`
   gap: 20px;
   margin-bottom: 20px;
 
-   @media (max-width: 700px) {
+  @media (max-width: 700px) {
     flex-direction: column;
     gap: 10px;
   }
 `;
-
 
 const ListingWrapper = styled.div`
   width: 100%;
@@ -106,12 +91,10 @@ const ListingWrapper = styled.div`
   }
 `;
 
-
 const StyledBoxWrapper = styled.div`
   position: relative;
   padding-bottom: 15px;
 `;
-
 
 const StyledImage = styled.img`
   width: 100%;
@@ -120,7 +103,6 @@ const StyledImage = styled.img`
   border-radius: 15px;
   display: block;
 `;
-
 
 const Guest = styled.div`
   position: absolute;
@@ -135,11 +117,9 @@ const Guest = styled.div`
   color: #333;
 `;
 
-
 const CardSkeleton = styled.div`
   width: 100%;
 `;
-
 
 const SkeletonContent = styled.div`
   padding-top: 8px;
@@ -175,7 +155,6 @@ const FavoriteButton = styled(Button)`
   border-radius: 50% !important;
 `;
 
-
 const SearchInput = styled(TextField)`
   width: 300px;
 
@@ -191,7 +170,6 @@ const CategorySelect = styled(Select)`
     width: 100%;
   }
 `;
-
 
 const DetailImage = styled.img`
   width: 100%;
@@ -231,7 +209,6 @@ const Amenity = styled.span`
   font-size: 14px;
 `;
 
-
 const LikeButton = styled(Button)`
   position: absolute !important;
   top: 8px;
@@ -256,7 +233,6 @@ const LikeButton = styled(Button)`
   }
 `;
 
-
 const StyledTitle = styled.h3`
   margin: 10px 0 5px;
   font-size: 14px;
@@ -267,12 +243,10 @@ const StyledTitle = styled.h3`
   text-overflow: ellipsis;
 `;
 
-
 const Rating = styled.p`
   margin: 0 0 4px;
   font-size: 13px;
 `;
-
 
 const Price = styled.p`
   margin: 0;
@@ -283,14 +257,12 @@ const Price = styled.p`
   }
 `;
 
-
 const Pagination = styled.div`
   display: flex;
   justify-content: center;
   gap: 8px;
   margin-top: 30px;
 `;
-
 
 const PageButton = styled.button`
   padding: 8px 14px;
@@ -302,16 +274,16 @@ const PageButton = styled.button`
   color: ${(props) => (props.$active ? "#fff" : "#000")};
 `;
 
-
 function Listing() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const hasLoadedListings = useRef(false);
 
   const { id } = useParams();
 
-
   const { data, loading, error } = useQuery(listingQuery, {
+    notifyOnNetworkStatusChange: true,
     variables: {
       limit: 15,
       page,
@@ -320,20 +292,28 @@ function Listing() {
     },
   });
 
-
   const [addFavorite] = useMutation(addFavoriteMutation);
 
+  const totalPage = data?.listings?.pagination?.totalPages || 0;
 
-  const totalPage =
-    data?.listings?.pagination?.totalPages || 0;
+  if (data?.listings) {
+    hasLoadedListings.current = true;
+  }
 
+  const normalizedSearch = search.trim().toLowerCase();
+  const listings = (data?.listings?.items || []).filter((item) => {
+    const matchesCategory = !category || item.category === category;
+    const searchableText = [item.title, item.location, item.address]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch =
+      !normalizedSearch || searchableText.includes(normalizedSearch);
 
-  const selectedListing =
-    data?.listings?.items?.find(
-      (item) => item.id === id
-    );
+    return matchesCategory && matchesSearch;
+  });
 
-
+  const selectedListing = listings.find((item) => item.id === id);
 
   if (id) {
     if (loading) {
@@ -362,53 +342,24 @@ function Listing() {
                 }}
               />
 
-              <Skeleton
-                variant="text"
-                width="120px"
-                height={30}
-              />
+              <Skeleton variant="text" width="120px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="220px"
-                height={30}
-              />
+              <Skeleton variant="text" width="220px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="180px"
-                height={30}
-              />
+              <Skeleton variant="text" width="180px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="160px"
-                height={30}
-              />
+              <Skeleton variant="text" width="160px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="170px"
-                height={30}
-              />
+              <Skeleton variant="text" width="170px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="140px"
-                height={30}
-              />
+              <Skeleton variant="text" width="140px" height={30} />
 
-              <Skeleton
-                variant="text"
-                width="200px"
-                height={40}
-              />
+              <Skeleton variant="text" width="200px" height={40} />
             </div>
           </ListingWrapper>
         </>
       );
     }
-
 
     if (error) {
       return (
@@ -416,14 +367,11 @@ function Listing() {
           <Header />
 
           <ListingWrapper>
-            <Typography color="error">
-              {error.message}
-            </Typography>
+            <Typography color="error">{error.message}</Typography>
           </ListingWrapper>
         </>
       );
     }
-
 
     if (!selectedListing) {
       return (
@@ -431,14 +379,11 @@ function Listing() {
           <Header />
 
           <ListingWrapper>
-            <Typography>
-              Listing topilmadi
-            </Typography>
+            <Typography>Listing topilmadi</Typography>
           </ListingWrapper>
         </>
       );
     }
-
 
     return (
       <>
@@ -446,16 +391,12 @@ function Listing() {
 
         <ListingWrapper>
           <DetailBox>
-
             <DetailTop>
               <div>
-                <DetailTitle>
-                  {selectedListing.title}
-                </DetailTitle>
+                <DetailTitle>{selectedListing.title}</DetailTitle>
 
                 <DetailLocation>
-                  <PushPinIcon fontSize="small" />{" "}
-                  {selectedListing.location}
+                  <PushPinIcon fontSize="small" /> {selectedListing.location}
                 </DetailLocation>
               </div>
 
@@ -466,7 +407,7 @@ function Listing() {
 
             <DetailImage
               src={
-                Array.isArray(selectedListing.images)
+                selectedListing.images
                   ? selectedListing.images
                   : selectedListing.images
               }
@@ -474,15 +415,12 @@ function Listing() {
             />
 
             <DetailInfo>
-
               <Info>
                 <StarIcon fontSize="small" />
                 {selectedListing.rating}
               </Info>
 
-              <Info>
-                {selectedListing.reviewsCount} reviews
-              </Info>
+              <Info>{selectedListing.reviewsCount} reviews</Info>
 
               <Info>
                 <House fontSize="small" />
@@ -508,58 +446,48 @@ function Listing() {
                 <ShowerIcon fontSize="small" />
                 {selectedListing.bathrooms} bathrooms
               </Info>
-
             </DetailInfo>
 
-            <Typography variant="h5">
-              About this place
-            </Typography>
+            <Typography variant="h5">About this place</Typography>
 
-            <Description>
-              {selectedListing.description}
-            </Description>
+            <Description>{selectedListing.description}</Description>
 
-            <Typography
-              variant="h5"
-              sx={{ marginBottom: "12px" }}
-            >
+            <Typography variant="h5" sx={{ marginBottom: "12px" }}>
               Amenities
             </Typography>
 
             <Amenities>
-              {selectedListing.amenities?.map(
-                (item, index) => (
-                  <Amenity key={index}>
-                    {item}
-                  </Amenity>
-                )
-              )}
+              {selectedListing.amenities?.map((item, index) => (
+                <Amenity key={index}>{item}</Amenity>
+              ))}
             </Amenities>
 
-            <Typography
-              variant="h5"
-              sx={{ marginTop: "25px" }}
-            >
+            <Typography variant="h5" sx={{ marginTop: "25px" }}>
               Address
             </Typography>
 
-            <Description>
-              {selectedListing.address}
-            </Description>
+            <Description>{selectedListing.address}</Description>
 
-            <Typography
-              variant="h4"
-              sx={{ marginTop: "25px" }}
-            >
+            <Typography variant="h4" sx={{ marginTop: "25px" }}>
               ${selectedListing.pricePerNight}
-              <Typography
-                component="span"
-                color="text.secondary"
-              >
+              <Typography component="span" color="text.secondary">
                 / night
               </Typography>
             </Typography>
 
+            <Link to="/">
+              <Button
+                style={{
+                  padding: "10px 20px",
+                  marginTop: "20px",
+                  width: "100px",
+                }}
+                variant="contained"
+                color="primary"
+              >
+                Cancel
+              </Button>
+            </Link>
           </DetailBox>
         </ListingWrapper>
 
@@ -568,80 +496,53 @@ function Listing() {
     );
   }
 
-
-
-  if (loading) {
+  if (loading && !hasLoadedListings.current) {
     return (
       <>
         <Header />
 
         <ListingWrapper>
           <FilterCategory>
-            <Skeleton
-              variant="rounded"
-              width={300}
-              height={56}
-            />
+            <Skeleton variant="rounded" width={300} height={56} />
 
-            <Skeleton
-              variant="rounded"
-              width={300}
-              height={56}
-            />
+            <Skeleton variant="rounded" width={300} height={56} />
           </FilterCategory>
 
-
           <Grid container spacing={3}>
-            {Array.from({ length: 8 }).map(
-              (_, index) => (
-                <Grid
-                  key={index}
-                  size={{
-                    xs: 12,
-                    sm: 6,
-                    md: 3,
-                  }}
-                >
-                  <CardSkeleton>
-                    <Skeleton
-                      variant="rounded"
-                      width="100%"
-                      height={230}
-                      sx={{
-                        borderRadius: "15px",
-                      }}
-                    />
+            {Array.from({ length: 8 }).map((_, index) => (
+              <Grid
+                key={index}
+                size={{
+                  xs: 12,
+                  sm: 6,
+                  md: 3,
+                }}
+              >
+                <CardSkeleton>
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={230}
+                    sx={{
+                      borderRadius: "15px",
+                    }}
+                  />
 
-                    <SkeletonContent>
-                      <Skeleton
-                        variant="text"
-                        width="70%"
-                        height={25}
-                      />
+                  <SkeletonContent>
+                    <Skeleton variant="text" width="70%" height={25} />
 
-                      <Skeleton
-                        variant="text"
-                        width="35%"
-                        height={22}
-                      />
+                    <Skeleton variant="text" width="35%" height={22} />
 
-                      <Skeleton
-                        variant="text"
-                        width="50%"
-                        height={22}
-                      />
-                    </SkeletonContent>
-                  </CardSkeleton>
-                </Grid>
-              )
-            )}
+                    <Skeleton variant="text" width="50%" height={22} />
+                  </SkeletonContent>
+                </CardSkeleton>
+              </Grid>
+            ))}
           </Grid>
         </ListingWrapper>
       </>
     );
   }
-
-
 
   return (
     <>
@@ -663,16 +564,13 @@ function Listing() {
             }}
           />
 
-
           <FormControl>
-            <InputLabel id="category-label">
-              Category
-            </InputLabel>
+            <InputLabel id="category-label">Category</InputLabel>
 
             <CategorySelect
-            style={{
-              width: "300px",
-            }}
+              style={{
+                width: "300px",
+              }}
               labelId="category-label"
               value={category}
               onChange={(e) => {
@@ -681,9 +579,7 @@ function Listing() {
               }}
               label="Category"
             >
-              <MenuItem value="">
-                All categories
-              </MenuItem>
+              <MenuItem value="">All categories</MenuItem>
 
               <MenuItem value="APARTMENT">APARTMENT</MenuItem>
               <MenuItem value="HOTEL">HOTEL</MenuItem>
@@ -694,82 +590,93 @@ function Listing() {
           </FormControl>
         </FilterCategory>
 
+        {error && <Typography color="error">{error.message}</Typography>}
 
-        {error && (
-          <Typography color="error">
-            {error.message}
+        <Grid container spacing={3}>
+          {listings.map((item) => (
+            <Grid
+              key={item.id}
+              size={{
+                xs: 12,
+                sm: 6,
+                md: 3,
+              }}
+            >
+              <StyledBoxWrapper>
+                <Link
+                  to={`/listings/${item.id}`}
+                  style={{
+                    textDecoration: "none",
+                    color: "inherit",
+                  }}
+                >
+                  <StyledImage src={item.images} alt={item.title} />
+                </Link>
+
+                <Guest>Guest favorite</Guest>
+
+                <LikeButton
+                  onClick={() => {
+                    addFavorite({
+                      variables: {
+                        listingId: item.id,
+                      },
+                    });
+                  }}
+                >
+                  <FavoriteBorderIcon />
+                </LikeButton>
+
+                <StyledTitle>{item.title}</StyledTitle>
+
+                <Rating>⭐ {item.rating}</Rating>
+
+                <Price>
+                  <span>${item.pricePerNight}</span> for 2 night
+                </Price>
+              </StyledBoxWrapper>
+            </Grid>
+          ))}
+        </Grid>
+
+        {!loading && !error && data?.listings && listings.length === 0 && (
+          <Typography
+            align="center"
+            sx={{ marginTop: 4, color: "text.secondary" }}
+          >
+            Natija Topilmadi!
           </Typography>
         )}
 
-
-        <Grid container spacing={3}>
-          {data?.listings?.items?.map(
-            (item) => (
+        {loading && hasLoadedListings.current && (
+          <Grid container spacing={3} sx={{ marginTop: 1 }}>
+            {Array.from({ length: 4 }).map((_, index) => (
               <Grid
-                key={item.id}
+                key={`loading-${index}`}
                 size={{
                   xs: 12,
                   sm: 6,
                   md: 3,
                 }}
               >
-                <StyledBoxWrapper>
-                  <Link
-                    to={`/listings/${item.id}`}
-                    style={{
-                      textDecoration: "none",
-                      color: "inherit",
-                    }}
-                  >
-                    <StyledImage
-                      src={item.images}
-                      alt={item.title}
-                    />
-                  </Link>
+                <CardSkeleton>
+                  <Skeleton
+                    variant="rounded"
+                    width="100%"
+                    height={230}
+                    sx={{ borderRadius: "15px" }}
+                  />
 
-
-                  <Guest>
-                    Guest favorite
-                  </Guest>
-
-
-                  <LikeButton
-                    onClick={() => {
-                      addFavorite({
-                        variables: {
-                          listingId: item.id,
-                        },
-                      });
-                    }}
-                  >
-                    <FavoriteBorderIcon />
-                  </LikeButton>
-
-
-                  <StyledTitle>
-                    {item.title}
-                  </StyledTitle>
-
-
-                  <Rating>
-                    ⭐ {item.rating}
-                  </Rating>
-
-
-                  <Price>
-                    <span>
-                      ${item.pricePerNight}
-                    </span>
-                    {" "}
-                    for 2 night
-                  </Price>
-                </StyledBoxWrapper>
+                  <SkeletonContent>
+                    <Skeleton variant="text" width="70%" height={25} />
+                    <Skeleton variant="text" width="35%" height={22} />
+                    <Skeleton variant="text" width="50%" height={22} />
+                  </SkeletonContent>
+                </CardSkeleton>
               </Grid>
-            )
-          )}
-        </Grid>
-
-
+            ))}
+          </Grid>
+        )}
 
         <Pagination>
           {Array.from({
@@ -777,12 +684,8 @@ function Listing() {
           }).map((_, index) => (
             <PageButton
               key={index}
-              $active={
-                page === index + 1
-              }
-              onClick={() =>
-                setPage(index + 1)
-              }
+              $active={page === index + 1}
+              onClick={() => setPage(index + 1)}
             >
               {index + 1}
             </PageButton>
@@ -790,11 +693,9 @@ function Listing() {
         </Pagination>
       </ListingWrapper>
 
-
       <Footer />
     </>
   );
 }
-
 
 export default Listing;

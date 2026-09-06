@@ -99,7 +99,6 @@ function Favorites() {
       <Header />
 
       <Wrapper style={{ paddingTop: "120px" }}>
-        <Title>❤️ Favorites</Title>
 
         {favorites.length === 0 ? (
           <EmptyWrapper>
