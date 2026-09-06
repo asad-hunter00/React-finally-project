@@ -77,7 +77,7 @@ const CategoryImage = styled.img`
 const Profile = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 12px;  
 
 @media (max-width: 768px) {
   padding: 0 90px;
@@ -164,7 +164,7 @@ function Header() {
   const handleLogout = () => {
     handleMenuClose();
     setIsLogout(false);
-
+                      
     setAccessToken(null);
     setUser(null);
 
